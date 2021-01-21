@@ -1,9 +1,6 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
-#Start Transcript
-Start-Transcript -Path C:\Windows\Logs\setPowerStig.log
-
 $path = "c:\imageBuilder"
 $logFile = "$path\setupLog.txt"
 function LogMessage
@@ -150,6 +147,3 @@ $STModify = Get-ScheduledTask -TaskName $STName
 $STModify.Triggers.repetition.Duration = 'P1D'
 $STModify.Triggers.repetition.Interval = 'PT20M'
 $STModify | Set-ScheduledTask <#  #>
-
-#Stop Transcript
-Stop-Transcript
