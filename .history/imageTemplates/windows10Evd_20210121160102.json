@@ -25,14 +25,11 @@
       },
       "osVersion" : {
         "type": "string"
-      }, 
-      "osRole": {
-        "type": "string"
       }
     },
     "variables": {
-      "setPowerStigUrl": "https://raw.githubusercontent.com/mfoldes/project-stig/master/scripts/setPowerStig.ps1",
-      "setAuditingStigUrl": "https://raw.githubusercontent.com/mfoldes/project-stig/master/scripts/auditStig.ps1",
+      "setPowerStigUrl": "https://raw.githubusercontent.com/shawngib/project-stig/master/scripts/setPowerStig.ps1",
+      "setAuditingStigUrl": "https://raw.githubusercontent.com/shawngib/project-stig/master/scripts/auditStig.ps1",
       "wsResourceId": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/',resourceGroup().name, '/providers/','Microsoft.OperationalInsights/workspaces/', parameters('workspaceName'))]"
     },
     "resources": [
@@ -41,9 +38,7 @@
         "type": "Microsoft.VirtualMachineImages/imageTemplates",
         "apiVersion": "2020-02-14",
         "location": "[resourceGroup().location]",
-        "dependsOn": [
-          
-        ],
+        "dependsOn": [],
         "tags": {
           "imagebuilderTemplate": "AzureImageBuilderSIG",
           "userIdentity": "enabled"
@@ -64,9 +59,9 @@
           },
           "source": {
             "type": "PlatformImage",
-            "publisher": "MicrosoftWindowsServer",
-            "offer": "WindowsServer",
-            "sku": "2019-Datacenter",
+            "publisher": "MicrosoftWindowsDesktop",
+            "offer": "office-365",
+            "sku": "20h1-evd-o365pp",
             "version": "latest"
           },
           "customize": [
@@ -78,16 +73,8 @@
                   "[concat('[System.Environment]::SetEnvironmentVariable(''WORKSPACE_KEY'',''',listKeys(variables('wsResourceId'), '2015-11-01-preview').primarySharedKey,''', [System.EnvironmentVariableTarget]::Machine)')]",
                   "[concat('[System.Environment]::SetEnvironmentVariable(''POWERSTIG_VER'',''',parameters('powerStigVersion'),''', [System.EnvironmentVariableTarget]::Machine)')]",
                   "[concat('[System.Environment]::SetEnvironmentVariable(''STIG_OSVER'',''',parameters('osVersion'),''', [System.EnvironmentVariableTarget]::Machine)')]",
-                  "[concat('[System.Environment]::SetEnvironmentVariable(''STIG_OSROLE'',''',parameters('osRole'),''', [System.EnvironmentVariableTarget]::Machine)')]",
                   "[concat('[System.Environment]::SetEnvironmentVariable(''STIG_VER'',''',parameters('stigVersion'),''', [System.EnvironmentVariableTarget]::Machine)')]"
                 ]
-            },
-            {
-              "type": "PowerShell",
-              "name": "addFeatures",
-              "inline": [
-                "[if(contains(parameters('osRole'), 'DC'),'Install-WindowsFeature -Name AD-Domain-Services -IncludeManagementTools','get-windowsfeature')]"
-              ]
             },
             {
               "type": "File",
@@ -97,7 +84,7 @@
             },
             {
               "type": "File",
-              "name": "AuditScriptDownload",
+              "name": "SuditScriptDownload",
               "sourceUri": "[variables('setAuditingStigUrl')]",
               "destination": "c:\\auditStig.ps1"
             },
@@ -120,21 +107,17 @@
           "distribute": [
             {
               "type": "SharedImage",
-              "galleryImageId": "[concat(resourceGroup().id,'/providers/Microsoft.Compute/galleries/',parameters('galleryName'),'/images/',parameters('imageTemplateName'),'/versions/',parameters('stigVersion'),'.0')]",
+              "galleryImageId": "[concat(resourceGroup().id,'/providers/Microsoft.Compute/galleries/',parameters('galleryName'),'/images/', parameters('imageTemplateName'),'/versions/1.23.0')]",
               "runOutputName": "[parameters('imageTemplateName')]",
               "artifactTags": {
                 "source": "azureVmImageBuilder",
-                "baseosimg": "WindowsServer"
+                "baseosimg": "windowsclient"
               },
               "replicationRegions": [
                 "eastus",
                 "eastus2",
                 "southcentralus"
               ]
-            },
-            {
-              "type": "VHD",
-              "runOutputName": "Win2019_STIG_V1R5"
             }
           ]
         }
