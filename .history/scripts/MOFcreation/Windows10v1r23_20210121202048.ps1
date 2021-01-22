@@ -1,7 +1,7 @@
 configuration Windows10v1r23
 {
     param()
-    Import-DscResource -ModuleName PowerSTIG -ModuleVersion 4.5.0
+    Import-DscResource -ModuleName PowerSTIG -ModuleVersion 4.5.1
     Node localhost
     {
         WindowsClient BaseLine
